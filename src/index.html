@@ -14,20 +14,22 @@
 </head>
 
 <body>
-  <div class="subscriptions">
-    
+  <div class="modal" id="modal">
+    <div class="modal-content">
+        <h2>Введите псевдоним</h2>
+        <input type="text" class="nickname-input" placeholder="Введите псевдоним">
+        <p class="error-text"></p>
+        <button class="nickname-submit">Продолжить</button>
+    </div>
   </div>
-  <div class="chat"></div>
-  <input class="chat-message"/>
-  <button class="chat-send">Отправить</button>
 
   <div class="chat-widget">
     <div class="chat-widget__area">
         <div class="chat-widget__messages-container">
-            <div class="chat-widget__messages" id="chat-widget__messages">
+            <div class="chat-widget__messages">
             </div>
         </div>
-        <input id="chat-widget__input" class="chat-widget__input" placeholder="Введите ваше сообщение">
+        <input class="chat-widget__input" placeholder="Введите ваше сообщение">
     </div>
     <div class="chat-widget__side">
         <div class="chat-widget__side-text">
