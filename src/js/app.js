@@ -22,7 +22,11 @@ class ChatApi {
   constructor(apiUrl) {
     this.apiUrl = apiUrl;
     this.nickName = undefined;
-    this.chatWidget = document.querySelector('.chat-widget')
+
+    this.chatWidget = document.querySelector('.chat-widget');
+    this.inputChat = document.querySelector('.chat-widget__input');
+    this.messages = document.querySelector('.chat-widget__messages');
+    this.chatContainer = document.querySelector('.chat-widget__messages-container');
 
     this.modal = document.querySelector('.modal');
     this.nicknameInput = modal.querySelector('.nickname-input');
@@ -30,6 +34,17 @@ class ChatApi {
     this.errorText = modal.querySelector('.error-text');
 
     this.#getUserNameModal();
+
+    // this.inputChat.addEventListener('keydown', (e) => {
+    //   if (e.key === 'Enter' && e.repeat === false) {
+    //     const msg = this.inputChat.value.trim();
+    //     if (msg) {
+    //       // отправим сообщение и очистим поле ввода
+    //       sendMsg(msg, true);
+    //       this.inputChat.value = '';
+    //     }
+    //   }
+    // });
   }
 
   #getUserNameModal() {
@@ -118,14 +133,29 @@ const ws = new WebSocket('ws://localhost:7070/ws');
 
 const chat = document.querySelector('.chat-widget');
 const chatMessage = chat.querySelector('.chat-widget__messages');
-const chatSend = chat.querySelector('.chat-widget__input');
+const inputMsg = chat.querySelector('.chat-widget__input');
+const chatContainer = document.querySelector('.chat-widget__messages-container');
 
-chatSend.addEventListener('click', () => {
-  const message = chatMessage.value;
-  if (!message) return;
 
-  ws.send(message);
-  chatMessage.value = '';
+inputMsg.addEventListener('keydown', (e) => {
+  // const message = chatMessage.value;
+  // if (!message) return;
+  console.log('inputMsg event');
+  if (e.key === 'Enter' && e.repeat === false) {
+    const msg = inputMsg.value.trim();
+    if (msg) {
+      // отправим сообщение и очистим поле ввода
+      data = {
+        message: msg,
+        nickName: 'asd123', // todo set
+      }
+      ws.send(JSON.stringify(data));
+      inputMsg.value = '';
+    }
+  }
+
+  // ws.send(message);
+  // chatMessage.value = '';
 });
 
 ws.addEventListener('open', (e) => {
@@ -151,11 +181,30 @@ ws.addEventListener('message', (e) => {
   console.log('Messages:');
   data.forEach(d => {
     const { time, user, message } = d;
-    console.log(message);
+    console.log(time, user, message);
+    showMsg(message, time, user)
     // chat.appendChild(document.createTextNode(message) + '\n');
-  });
 
+  });
 });
+
+// отправить сообщение в чат
+function showMsg(msg, time, user) {
+  const isMyMsg = user === 'asd123';//this.nickName;
+  nickName = isMyMsg ? 'You' : user;
+  chatMessage.innerHTML += `
+  <div class="message ${isMyMsg ? 'message_client' : ''}">
+    <div class="message__time">${nickName}, ${time}</div>
+    <div class="message__text">${msg}</div>
+  </div>
+  `
+  scrollToBottom();
+}
+
+// прокрутку окна чата до блока последнего комментария
+function scrollToBottom() {
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+}
 
 window.api = new ChatApi('http://localhost:7070');
 

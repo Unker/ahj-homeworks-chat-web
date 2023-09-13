@@ -52,7 +52,7 @@ body {
 
 .message {
   margin-bottom: 10px;
-  display: flex;
+  /* display: flex; */
   align-items: center;
 }
 
@@ -61,7 +61,7 @@ body {
 }
 
 .message_client {
-  justify-content: flex-end;
+  /* justify-content: flex-end; */
   text-align: right;
 }
 
@@ -70,21 +70,21 @@ body {
   font-size: 10px;
 }
 .message_client .message__time {
-  order: 2;
+  /* order: 2; */
   margin-right: 0;;
   margin-left: 5px;
 }
 .message__text {
-  order: 1;
-  display: inline-block;
+  /* order: 1; */
+  display: block;
   padding: 5px;
-  background: green;
-  color: #fff;
+  background: rgba(0, 128, 0, 0.2);
+  color: #000;
   border-radius: 4px;
 }
 
 .message_client .message__text {
-  background: red;
+  background: rgba(255, 0, 0, 0.3);
 }
 
 .chat-widget__input {
