@@ -1,5 +1,3 @@
-// url = 'http://localhost:7070'
-
 url = process.env.SERVER_URL || 'http://localhost:7070'
 
 class ChatApi {
@@ -16,7 +14,7 @@ class ChatApi {
     this.usersWidget = document.querySelector('.users-widget__area');
     this.usersList = document.querySelector('.users-widget__list');
 
-    // элементы моального окна с вводом никнейма
+    // элементы модального окна с вводом никнейма
     this.modal = document.querySelector('.modal');
     this.nicknameInput = modal.querySelector('.nickname-input');
     this.submitButton = modal.querySelector('.nickname-submit');
@@ -25,8 +23,10 @@ class ChatApi {
     this.#getUserNameModal();
 
     this.ws = new WebSocket(apiUrl.replace(/http/, 'ws') + '/ws');
-
     this.#initWs(this.ws);
+
+    this.eventSource = new EventSource(apiUrl + '/sseUsers');
+    this.#initEventSource(this.eventSource);
   }
 
   // отобразить принятое сообщение в чате
@@ -40,6 +40,15 @@ class ChatApi {
       </div>
     `
     this.scrollToBottom();
+  }
+
+  // отобразить список пользователей в чате
+  showUsers(nickNames) {
+    nickNames.sort().forEach((name) => {
+      this.usersList.innerHTML += `
+            <li class="user__list">${name}</li>
+          `
+    });
   }
 
   // прокрутку окна чата до блока последнего комментария
@@ -84,6 +93,25 @@ class ChatApi {
 
     ws.addEventListener('error', (e) => {
       console.log('ws error');
+    });
+  }
+
+  #initEventSource(eventSource) {
+    eventSource.addEventListener('open', (e) => {
+      // console.log(e);
+      console.log('sse open');
+    });
+
+    eventSource.addEventListener('error', (e) => {
+      console.log(e);
+      console.log('sse error');
+    });
+
+    eventSource.addEventListener('updateUser', (e) => {
+      console.log('message sse', e.data);
+      const nickNames = JSON.parse(e.data);
+      console.log('nickNames sse', nickNames);
+      this.showUsers(nickNames);
     });
   }
 
@@ -140,40 +168,6 @@ class ChatApi {
       return error;
     }
   }
-
-
 }
-
-usersList = document.querySelector('.users-widget__list');
-
-const eventSource = new EventSource('http://localhost:7070/sseUsers');
-
-eventSource.addEventListener('open', (e) => {
-  // console.log(e);
-  console.log('sse open');
-});
-
-eventSource.addEventListener('error', (e) => {
-  console.log(e);
-  console.log('sse error');
-});
-
-eventSource.addEventListener('updateUser', (e) => {
-  console.log('message sse', e.data);
-  const nickNames = JSON.parse(e.data);
-  console.log('nickNames sse', nickNames);
-  showUsers(nickNames);
-});
-
-// отобразить список пользователей в чате
-function showUsers(nickNames) {
-  nickNames.sort().forEach((name) => {
-    usersList.innerHTML += `
-      <li class="user__list">${name}</li>
-    `
-  });
-}
-
 
 window.api = new ChatApi(url);
-
