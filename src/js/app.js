@@ -1,4 +1,4 @@
-url = process.env.SERVER_URL || 'http://localhost:7070'
+const url = process.env.SERVER_URL || 'http://localhost:7070'
 
 class ChatApi {
   constructor(apiUrl) {
