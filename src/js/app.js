@@ -1,4 +1,4 @@
-const url = process.env.SERVER_URL || 'http://localhost:7070'
+const url = process.env.SERVER_URL || 'http://localhost:7070';
 
 class ChatApi {
   constructor(apiUrl) {
@@ -16,16 +16,16 @@ class ChatApi {
 
     // элементы модального окна с вводом никнейма
     this.modal = document.querySelector('.modal');
-    this.nicknameInput = modal.querySelector('.nickname-input');
-    this.submitButton = modal.querySelector('.nickname-submit');
-    this.errorText = modal.querySelector('.error-text');
+    this.nicknameInput = this.modal.querySelector('.nickname-input');
+    this.submitButton = this.modal.querySelector('.nickname-submit');
+    this.errorText = this.modal.querySelector('.error-text');
 
     this.#getUserNameModal();
 
-    this.ws = new WebSocket(apiUrl.replace(/http/, 'ws') + '/ws');
+    this.ws = new WebSocket(`${apiUrl.replace(/http/, 'ws')}/ws`);
     this.#initWs(this.ws);
 
-    this.eventSource = new EventSource(apiUrl + '/sseUsers');
+    this.eventSource = new EventSource(`${apiUrl}/sseUsers`);
     this.#initEventSource(this.eventSource);
   }
 
@@ -38,7 +38,7 @@ class ChatApi {
         <div class="message__time">${nickNameMsg}, ${time}</div>
         <div class="message__text">${msg}</div>
       </div>
-    `
+    `;
     this.scrollToBottom();
   }
 
@@ -47,7 +47,7 @@ class ChatApi {
     nickNames.sort().forEach((name) => {
       this.usersList.innerHTML += `
             <li class="user__list">${name}</li>
-          `
+          `;
     });
   }
 
@@ -65,7 +65,7 @@ class ChatApi {
           const data = {
             message: msg,
             nickName: this.nickName,
-          }
+          };
           ws.send(JSON.stringify(data));
           this.inputMsg.value = '';
         }
@@ -76,10 +76,10 @@ class ChatApi {
     ws.addEventListener('message', (e) => {
       const data = JSON.parse(e.data);
       console.log('Messages:', data);
-      data.forEach(receive => {
+      data.forEach((receive) => {
         const { time, user, message } = receive;
         console.log(time, user, message);
-        this.showMsg(message, time, user)
+        this.showMsg(message, time, user);
       });
     });
 
@@ -125,7 +125,7 @@ class ChatApi {
     this.submitButton.addEventListener('click', async () => {
       const nickname = this.nicknameInput.value;
 
-      console.log(nickname)
+      console.log(nickname);
 
       // Отправляем никнейм на сервер для проверки доступности
       const isNicknameAvailable = await this.checkNicknameAvailability(nickname);
@@ -143,7 +143,6 @@ class ChatApi {
         this.errorText.textContent = 'Никнейм занят. Пожалуйста, выберите другой.';
         this.errorText.style.display = 'block';
       }
-
     });
   }
 
