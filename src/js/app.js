@@ -1,5 +1,6 @@
-url = 'http://localhost:7070'
+// url = 'http://localhost:7070'
 
+url = process.env.SERVER_URL || 'http://localhost:7070'
 
 class ChatApi {
   constructor(apiUrl) {
@@ -11,6 +12,9 @@ class ChatApi {
     this.inputMsg = document.querySelector('.chat-widget__input');
     this.chatMessage = document.querySelector('.chat-widget__messages');
     this.chatContainer = document.querySelector('.chat-widget__messages-container');
+
+    this.usersWidget = document.querySelector('.users-widget__area');
+    this.usersList = document.querySelector('.users-widget__list');
 
     // элементы моального окна с вводом никнейма
     this.modal = document.querySelector('.modal');
@@ -63,8 +67,8 @@ class ChatApi {
     ws.addEventListener('message', (e) => {
       const data = JSON.parse(e.data);
       console.log('Messages:', data);
-      data.forEach(d => {
-        const { time, user, message } = d;
+      data.forEach(receive => {
+        const { time, user, message } = receive;
         console.log(time, user, message);
         this.showMsg(message, time, user)
       });
@@ -122,11 +126,14 @@ class ChatApi {
         method: 'POST',
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Ошибка взаимодейтсвия с сервером');
+        if (data.available === undefined) {
+          throw new Error('Ошибка взаимодейтсвия с сервером');
+        }
       }
 
-      const data = await response.json();
       return data.available;
     } catch (error) {
       console.error(error);
@@ -137,7 +144,7 @@ class ChatApi {
 
 }
 
-
+usersList = document.querySelector('.users-widget__list');
 
 const eventSource = new EventSource('http://localhost:7070/sseUsers');
 
@@ -155,8 +162,17 @@ eventSource.addEventListener('updateUser', (e) => {
   console.log('message sse', e.data);
   const nickNames = JSON.parse(e.data);
   console.log('nickNames sse', nickNames);
-
+  showUsers(nickNames);
 });
+
+// отобразить список пользователей в чате
+function showUsers(nickNames) {
+  nickNames.sort().forEach((name) => {
+    usersList.innerHTML += `
+      <li class="user__list">${name}</li>
+    `
+  });
+}
 
 
 window.api = new ChatApi(url);
