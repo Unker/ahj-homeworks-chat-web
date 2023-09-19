@@ -22,11 +22,8 @@ class ChatApi {
 
     this.#getUserNameModal();
 
-    this.ws = new WebSocket(`${apiUrl.replace(/http/, 'ws')}/ws`);
+    this.ws = new WebSocket(`${this.apiUrl.replace(/http/, 'ws')}/ws`);
     this.#initWs(this.ws);
-
-    this.eventSource = new EventSource(`${apiUrl}/sseUsers`);
-    this.#initEventSource(this.eventSource);
   }
 
   // отобразить принятое сообщение в чате
@@ -79,7 +76,6 @@ class ChatApi {
       console.log('Messages:', data);
       data.forEach((receive) => {
         const { time, user, message } = receive;
-        console.log(time, user, message);
         this.showMsg(message, time, user);
       });
     });
@@ -98,6 +94,12 @@ class ChatApi {
   }
 
   #initEventSource(eventSource) {
+    eventSource.addEventListener('updateUser', (e) => {
+      console.log('sse message', e.data);
+      const nickNames = JSON.parse(e.data);
+      this.showUsers(nickNames);
+    });
+
     eventSource.addEventListener('open', (e) => {
       // console.log(e);
       console.log('sse open');
@@ -106,13 +108,6 @@ class ChatApi {
     eventSource.addEventListener('error', (e) => {
       console.log(e);
       console.log('sse error');
-    });
-
-    eventSource.addEventListener('updateUser', (e) => {
-      console.log('message sse', e.data);
-      const nickNames = JSON.parse(e.data);
-      console.log('nickNames sse', nickNames);
-      this.showUsers(nickNames);
     });
   }
 
@@ -129,7 +124,7 @@ class ChatApi {
       console.log(nickname);
 
       // Отправляем никнейм на сервер для проверки доступности
-      const isNicknameAvailable = await this.checkNicknameAvailability(nickname);
+      const [isNicknameAvailable, token] = await this.checkNicknameAvailability(nickname);
       if (isNicknameAvailable instanceof Error) {
         this.errorText.textContent = 'Сервер не доступен';
         this.errorText.style.display = 'block';
@@ -139,6 +134,11 @@ class ChatApi {
         this.modal.style.display = 'none';
         this.chat.classList.add('chat-widget_active');
         this.nickName = nickname;
+        this.token = token;
+    
+        console.log('this.token',this.token)
+        this.eventSource = new EventSource(`${this.apiUrl}/sseUsers?token=${this.token}`);
+        this.#initEventSource(this.eventSource);
       } else {
         // Иначе сообщаем пользователю, что никнейм занят
         this.errorText.textContent = 'Никнейм занят. Пожалуйста, выберите другой.';
@@ -161,8 +161,9 @@ class ChatApi {
           throw new Error('Ошибка взаимодейтсвия с сервером');
         }
       }
+      console.log('data.token',data.token)
 
-      return data.available;
+      return [data.available, data.token];
     } catch (error) {
       console.error(error);
       return error;
