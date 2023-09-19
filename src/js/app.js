@@ -44,6 +44,7 @@ class ChatApi {
 
   // отобразить список пользователей в чате
   showUsers(nickNames) {
+    this.usersList.innerHTML = '';
     nickNames.sort().forEach((name) => {
       this.usersList.innerHTML += `
             <li class="user__list">${name}</li>
