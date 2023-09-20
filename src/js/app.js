@@ -24,6 +24,11 @@ class ChatApi {
 
     this.ws = new WebSocket(`${this.apiUrl.replace(/http/, 'ws')}/ws`);
     this.#initWs(this.ws);
+
+    // console.log('this.token',this.token)
+    // this.eventSource = new EventSource(`${this.apiUrl}/sseUsers?token=${this.token}`);
+    // this.#initEventSource(this.eventSource);
+    this.#bindEventSourse(this.token);
   }
 
   // отобразить принятое сообщение в чате
@@ -111,6 +116,12 @@ class ChatApi {
     });
   }
 
+  #bindEventSourse(token) {
+    console.log('this.token', token)
+    this.eventSource = new EventSource(`${this.apiUrl}/sseUsers?token=${token}`);
+    this.#initEventSource(this.eventSource);
+  }
+  
   #getUserNameModal() {
     // Открываем модальное окно при загрузке страницы
     window.addEventListener('load', () => {
@@ -119,33 +130,39 @@ class ChatApi {
 
     // Обработчик события для кнопки "Отправить"
     this.submitButton.addEventListener('click', async () => {
-      const nickname = this.nicknameInput.value;
-
-      console.log(nickname);
-
-      // Отправляем никнейм на сервер для проверки доступности
-      const [isNicknameAvailable, token] = await this.checkNicknameAvailability(nickname);
-      if (isNicknameAvailable instanceof Error) {
-        this.errorText.textContent = 'Сервер не доступен';
-        this.errorText.style.display = 'block';
-      } else if (isNicknameAvailable) {
-        // Если никнейм доступен, открываем окно чата
-        this.errorText.style.display = 'none';
-        this.modal.style.display = 'none';
-        this.chat.classList.add('chat-widget_active');
-        this.nickName = nickname;
-        this.token = token;
-    
-        console.log('this.token',this.token)
-        this.eventSource = new EventSource(`${this.apiUrl}/sseUsers?token=${this.token}`);
-        this.#initEventSource(this.eventSource);
-      } else {
-        // Иначе сообщаем пользователю, что никнейм занят
-        this.errorText.textContent = 'Никнейм занят. Пожалуйста, выберите другой.';
-        this.errorText.style.display = 'block';
+      this.#tryConnectToChat();
+    });
+    this.nicknameInput.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter' || e.keyCode === 13) {
+        this.#tryConnectToChat();
       }
     });
   }
+
+  async #tryConnectToChat() {
+    const nickname = this.nicknameInput.value;
+
+    console.log(nickname);
+
+    // Отправляем никнейм на сервер для проверки доступности
+    const [isNicknameAvailable, token] = await this.checkNicknameAvailability(nickname);
+    if (isNicknameAvailable instanceof Error) {
+      this.errorText.textContent = 'Сервер не доступен';
+      this.errorText.style.display = 'block';
+    } else if (isNicknameAvailable) {
+      // Если никнейм доступен, открываем окно чата
+      this.errorText.style.display = 'none';
+      this.modal.style.display = 'none';
+      this.chat.classList.add('chat-widget_active');
+      this.nickName = nickname;
+      this.token = token;
+      this.#bindEventSourse(token);
+    } else {
+      // Иначе сообщаем пользователю, что никнейм занят
+      this.errorText.textContent = 'Никнейм занят. Пожалуйста, выберите другой.';
+      this.errorText.style.display = 'block';
+    }
+  };
 
   // Функция для отправки запроса на сервер для проверки доступности никнейма
   async checkNicknameAvailability(nickname) {
