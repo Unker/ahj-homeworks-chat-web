@@ -117,11 +117,11 @@ class ChatApi {
   }
 
   #bindEventSourse(token) {
-    console.log('this.token', token)
+    console.log('this.token', token);
     this.eventSource = new EventSource(`${this.apiUrl}/sseUsers?token=${token}`);
     this.#initEventSource(this.eventSource);
   }
-  
+
   #getUserNameModal() {
     // Открываем модальное окно при загрузке страницы
     window.addEventListener('load', () => {
@@ -162,7 +162,7 @@ class ChatApi {
       this.errorText.textContent = 'Никнейм занят. Пожалуйста, выберите другой.';
       this.errorText.style.display = 'block';
     }
-  };
+  }
 
   // Функция для отправки запроса на сервер для проверки доступности никнейма
   async checkNicknameAvailability(nickname) {
@@ -178,7 +178,6 @@ class ChatApi {
           throw new Error('Ошибка взаимодейтсвия с сервером');
         }
       }
-      console.log('data.token',data.token)
 
       return [data.available, data.token];
     } catch (error) {
